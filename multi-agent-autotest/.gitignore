@@ -1,0 +1,16 @@
+# Variáveis de ambiente
+.env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+htmlcov/
+
+# Node
+node_modules/
+dist/s
+
+# Docker
+*.log

@@ -1,0 +1,38 @@
+version: "3.9"
+
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+      # Permite o backend spawnar containers Docker (Docker-in-Docker)
+      - /var/run/docker.sock:/var/run/docker.sock
+      # Volume temporário compartilhado para passar arquivos ao sandbox
+      - sandbox_tmp:/tmp/sandbox
+    env_file:
+      - .env
+    depends_on:
+      - sandbox
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+
+  sandbox:
+    build: ./backend/sandbox
+    image: autotest-sandbox   # nome da imagem que o executor.py referencia
+    # O sandbox não fica rodando — é só buildar a imagem para o backend usar
+    entrypoint: ["echo", "sandbox image ready"]
+    volumes:
+      - sandbox_tmp:/tmp/sandbox
+
+volumes:
+  sandbox_tmp:
