@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="7" time="0.290" timestamp="2026-02-23T17:39:32.803281+00:00" hostname="9828dce22028"><testcase classname="test_generated" name="test_run_tests_code_dir_not_exists" time="0.001" /><testcase classname="test_generated" name="test_run_tests_tests_dir_not_exists" time="0.001" /><testcase classname="test_generated" name="test_run_tests_timeout" time="0.001" /><testcase classname="test_generated" name="test_parse_coverage_file_not_exists" time="0.001"><failure message="FileNotFoundError: Coverage XML not found">def test_parse_coverage_file_not_exists():
+        coverage_xml = Path("/invalid/coverage.xml")
+        with patch('executor.ET.parse', side_effect=FileNotFoundError("Coverage XML not found")):
+&gt;           result = _parse_coverage(coverage_xml)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+/tests/test_generated.py:36: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+executor.py:101: in _parse_coverage
+    tree = ET.parse(coverage_xml)
+           ^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.11/unittest/mock.py:1124: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.11/unittest/mock.py:1128: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = &lt;MagicMock name='parse' id='130938628219920'&gt;
+args = (PosixPath('/invalid/coverage.xml'),), kwargs = {}
+effect = FileNotFoundError('Coverage XML not found')
+
+    def _execute_mock_call(self, /, *args, **kwargs):
+        # separate from _increment_mock_call so that awaited functions are
+        # executed separately from their call, also AsyncMock overrides this method
+    
+        effect = self.side_effect
+        if effect is not None:
+            if _is_exception(effect):
+&gt;               raise effect
+E               FileNotFoundError: Coverage XML not found
+
+/usr/local/lib/python3.11/unittest/mock.py:1183: FileNotFoundError</failure></testcase><testcase classname="test_generated" name="test_parse_coverage_malformed_xml" time="0.001"><failure message="xml.etree.ElementTree.ParseError: Malformed XML">def test_parse_coverage_malformed_xml():
+        coverage_xml = Path("/invalid/coverage.xml")
+        with patch('executor.ET.parse', side_effect=ET.ParseError("Malformed XML")):
+&gt;           result = _parse_coverage(coverage_xml)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+/tests/test_generated.py:44: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+executor.py:101: in _parse_coverage
+    tree = ET.parse(coverage_xml)
+           ^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.11/unittest/mock.py:1124: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.11/unittest/mock.py:1128: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = &lt;MagicMock name='parse' id='130938628506512'&gt;
+args = (PosixPath('/invalid/coverage.xml'),), kwargs = {}
+effect = ParseError('Malformed XML')
+
+    def _execute_mock_call(self, /, *args, **kwargs):
+        # separate from _increment_mock_call so that awaited functions are
+        # executed separately from their call, also AsyncMock overrides this method
+    
+        effect = self.side_effect
+        if effect is not None:
+            if _is_exception(effect):
+&gt;               raise effect
+E               xml.etree.ElementTree.ParseError: Malformed XML
+
+/usr/local/lib/python3.11/unittest/mock.py:1183: ParseError</failure></testcase><testcase classname="test_generated" name="test_parse_junit_file_not_exists" time="0.001" /><testcase classname="test_generated" name="test_parse_junit_malformed_xml" time="0.001" /></testsuite></testsuites>

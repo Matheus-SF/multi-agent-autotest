@@ -35,7 +35,6 @@ def _corrigir_imports(code: str) -> str:
     if not para_adicionar:
         return code
 
-    # Injeta após o bloco de imports existente
     primeiro_nao_import = next(
         (
             i for i, l in enumerate(linhas)
@@ -54,6 +53,35 @@ def _corrigir_imports(code: str) -> str:
         + linhas[primeiro_nao_import:]
     )
     return "\n".join(linhas)
+
+
+def _corrigir_mocks(code: str) -> str:
+    """
+    Corrige padrões problemáticos de mock gerados pelo LLM.
+
+    Problema: side_effect=lambda p: ... não funciona quando o método
+    interno recebe argumentos extras (como self). O lambda precisa
+    aceitar qualquer número de argumentos.
+    """
+    # Substitui qualquer lambda com argumento fixo em side_effect
+    # por lambda *args, **kwargs que funciona universalmente
+    code = re.sub(
+        r'side_effect=lambda\s+\w+(\s*,\s*\w+)*\s*:',
+        'side_effect=lambda *args, **kwargs:',
+        code
+    )
+
+    # Corrige o corpo do lambda para usar args[0] em vez do nome do parâmetro
+    # Ex: lambda *args, **kwargs: False if 'x' in str(args[0]) else True
+    # Isso é feito substituindo referências ao parâmetro original por args[0]
+    # Nota: essa substituição é conservadora — só age em padrões simples
+    code = re.sub(
+        r'side_effect=lambda \*args, \*\*kwargs: (False|True) if [\'"]([^\'"]+)[\'"] in str\(\w+\)',
+        r'side_effect=lambda *args, **kwargs: \1 if "\2" in str(args[0])',
+        code
+    )
+
+    return code
 
 
 def write_tests(state: dict) -> dict:
@@ -94,5 +122,8 @@ def write_tests(state: dict) -> dict:
 
     # Injeta imports faltantes que o LLM esqueceu de incluir
     generated_tests = _corrigir_imports(generated_tests)
+
+    # Corrige padrões problemáticos de mock
+    generated_tests = _corrigir_mocks(generated_tests)
 
     return {**state, "generated_tests": generated_tests}

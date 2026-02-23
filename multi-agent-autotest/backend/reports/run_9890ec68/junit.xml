@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="4" skipped="0" tests="8" time="0.293" timestamp="2026-02-23T17:40:11.952610+00:00" hostname="e12aee5aeb07"><testcase classname="test_generated" name="test_run_tests_coverage_file_not_exists" time="0.003"><failure message="AssertionError: assert 'tuple index out of range' == 'stderr'&#10;  &#10;  - stderr&#10;  + tuple index out of range">def test_run_tests_coverage_file_not_exists():
+        with mock.patch('executor.subprocess.run') as mock_run, \
+             mock.patch('executor.Path.exists', side_effect=lambda *args, **kwargs: False if "coverage.xml" in str(args[0]) else True):
+            mock_run.return_value.stdout = "stdout"
+            mock_run.return_value.stderr = "stderr"
+            result = run_tests("/fake/code_dir", "/fake/tests_dir")
+            assert not result.success
+            assert result.coverage_pct == 0.0
+            assert result.uncovered_lines == {}
+&gt;           assert result.error_output == "stderr"
+E           AssertionError: assert 'tuple index out of range' == 'stderr'
+E             
+E             - stderr
+E             + tuple index out of range
+
+/tests/test_generated.py:19: AssertionError</failure></testcase><testcase classname="test_generated" name="test_run_tests_junit_file_not_exists" time="0.003"><failure message="AssertionError: assert False&#10; +  where False = CoverageResult(success=False, coverage_pct=0.0, uncovered_lines={}, tests_passed=0, tests_failed=0, failed_tests=None, error_output='tuple index out of range').success">def test_run_tests_junit_file_not_exists():
+        with mock.patch('executor.subprocess.run') as mock_run, \
+             mock.patch('executor.Path.exists', side_effect=lambda *args, **kwargs: False if "junit.xml" in str(args[0]) else True), \
+             mock.patch('executor._parse_coverage', return_value=CoverageResult(True, 75.0, {})):
+            result = run_tests("/fake/code_dir", "/fake/tests_dir")
+&gt;           assert result.success
+E           AssertionError: assert False
+E            +  where False = CoverageResult(success=False, coverage_pct=0.0, uncovered_lines={}, tests_passed=0, tests_failed=0, failed_tests=None, error_output='tuple index out of range').success
+
+/tests/test_generated.py:26: AssertionError</failure></testcase><testcase classname="test_generated" name="test_run_tests_timeout" time="0.001" /><testcase classname="test_generated" name="test_run_tests_unexpected_exception" time="0.001" /><testcase classname="test_generated" name="test_parse_coverage_file_not_exists" time="0.001"><failure message="FileNotFoundError">def test_parse_coverage_file_not_exists():
+        with mock.patch('executor.ET.parse', side_effect=FileNotFoundError):
+&gt;           result = _parse_coverage(Path("/fake/coverage.xml"))
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+/tests/test_generated.py:50: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+executor.py:101: in _parse_coverage
+    tree = ET.parse(coverage_xml)
+           ^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.11/unittest/mock.py:1124: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.11/unittest/mock.py:1128: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = &lt;MagicMock name='parse' id='138951033657680'&gt;
+args = (PosixPath('/fake/coverage.xml'),), kwargs = {}
+effect = &lt;class 'FileNotFoundError'&gt;
+
+    def _execute_mock_call(self, /, *args, **kwargs):
+        # separate from _increment_mock_call so that awaited functions are
+        # executed separately from their call, also AsyncMock overrides this method
+    
+        effect = self.side_effect
+        if effect is not None:
+            if _is_exception(effect):
+&gt;               raise effect
+E               FileNotFoundError
+
+/usr/local/lib/python3.11/unittest/mock.py:1183: FileNotFoundError</failure></testcase><testcase classname="test_generated" name="test_parse_coverage_malformed_xml" time="0.001"><failure message="xml.etree.ElementTree.ParseError: &lt;no detail available&gt;">def test_parse_coverage_malformed_xml():
+        with mock.patch('executor.ET.parse', side_effect=ET.ParseError):
+&gt;           result = _parse_coverage(Path("/fake/coverage.xml"))
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+/tests/test_generated.py:57: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+executor.py:101: in _parse_coverage
+    tree = ET.parse(coverage_xml)
+           ^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.11/unittest/mock.py:1124: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.11/unittest/mock.py:1128: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = &lt;MagicMock name='parse' id='138951033780944'&gt;
+args = (PosixPath('/fake/coverage.xml'),), kwargs = {}
+effect = &lt;class 'xml.etree.ElementTree.ParseError'&gt;
+
+    def _execute_mock_call(self, /, *args, **kwargs):
+        # separate from _increment_mock_call so that awaited functions are
+        # executed separately from their call, also AsyncMock overrides this method
+    
+        effect = self.side_effect
+        if effect is not None:
+            if _is_exception(effect):
+&gt;               raise effect
+E               xml.etree.ElementTree.ParseError: &lt;no detail available&gt;
+
+/usr/local/lib/python3.11/unittest/mock.py:1183: ParseError</failure></testcase><testcase classname="test_generated" name="test_parse_junit_file_not_exists" time="0.001" /><testcase classname="test_generated" name="test_parse_junit_malformed_xml" time="0.001" /></testsuite></testsuites>

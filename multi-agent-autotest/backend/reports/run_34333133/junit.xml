@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="7" time="0.376" timestamp="2026-02-23T17:40:01.135491+00:00" hostname="6c3b52f6c8a1"><testcase classname="test_generated" name="test_run_tests_coverage_file_not_exists" time="0.002" /><testcase classname="test_generated" name="test_run_tests_timeout" time="0.001" /><testcase classname="test_generated" name="test_run_tests_exception" time="0.001" /><testcase classname="test_generated" name="test_parse_coverage_file_not_exists" time="0.001"><failure message="FileNotFoundError">def test_parse_coverage_file_not_exists():
+        with patch('executor.ET.parse', side_effect=FileNotFoundError):
+&gt;           result = _parse_coverage(Path("/fake/coverage.xml"))
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+/tests/test_generated.py:42: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+executor.py:101: in _parse_coverage
+    tree = ET.parse(coverage_xml)
+           ^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.11/unittest/mock.py:1124: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.11/unittest/mock.py:1128: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = &lt;MagicMock name='parse' id='133845710731792'&gt;
+args = (PosixPath('/fake/coverage.xml'),), kwargs = {}
+effect = &lt;class 'FileNotFoundError'&gt;
+
+    def _execute_mock_call(self, /, *args, **kwargs):
+        # separate from _increment_mock_call so that awaited functions are
+        # executed separately from their call, also AsyncMock overrides this method
+    
+        effect = self.side_effect
+        if effect is not None:
+            if _is_exception(effect):
+&gt;               raise effect
+E               FileNotFoundError
+
+/usr/local/lib/python3.11/unittest/mock.py:1183: FileNotFoundError</failure></testcase><testcase classname="test_generated" name="test_parse_coverage_malformed_xml" time="0.002"><failure message="xml.etree.ElementTree.ParseError: &lt;no detail available&gt;">def test_parse_coverage_malformed_xml():
+        with patch('executor.ET.parse', side_effect=ET.ParseError):
+&gt;           result = _parse_coverage(Path("/fake/coverage.xml"))
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+/tests/test_generated.py:50: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+executor.py:101: in _parse_coverage
+    tree = ET.parse(coverage_xml)
+           ^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.11/unittest/mock.py:1124: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.11/unittest/mock.py:1128: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = &lt;MagicMock name='parse' id='133845710958672'&gt;
+args = (PosixPath('/fake/coverage.xml'),), kwargs = {}
+effect = &lt;class 'xml.etree.ElementTree.ParseError'&gt;
+
+    def _execute_mock_call(self, /, *args, **kwargs):
+        # separate from _increment_mock_call so that awaited functions are
+        # executed separately from their call, also AsyncMock overrides this method
+    
+        effect = self.side_effect
+        if effect is not None:
+            if _is_exception(effect):
+&gt;               raise effect
+E               xml.etree.ElementTree.ParseError: &lt;no detail available&gt;
+
+/usr/local/lib/python3.11/unittest/mock.py:1183: ParseError</failure></testcase><testcase classname="test_generated" name="test_parse_junit_file_not_exists" time="0.003" /><testcase classname="test_generated" name="test_parse_junit_malformed_xml" time="0.001" /></testsuite></testsuites>
