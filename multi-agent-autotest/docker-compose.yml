@@ -29,7 +29,6 @@ services:
   sandbox:
     build: ./backend/sandbox
     image: autotest-sandbox   # nome da imagem que o executor.py referencia
-    # O sandbox não fica rodando — é só buildar a imagem para o backend usar
     entrypoint: ["echo", "sandbox image ready"]
     volumes:
       - sandbox_tmp:/tmp/sandbox

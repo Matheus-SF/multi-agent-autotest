@@ -1,11 +1,15 @@
 import { useState, useRef } from "react";
 
 const API_URL = "https://friendly-trout-r47rw4px56qjcx7xp-8080.app.github.dev/api";
+const BACKEND_URL = "https://friendly-trout-r47rw4px56qjcx7xp-8080.app.github.dev";
+
+const ETAPAS = ["analyzer", "writer", "executor", "reviewer"];
 
 export default function App() {
   const [files, setFiles] = useState([]);
   const [threshold, setThreshold] = useState(80);
   const [loading, setLoading] = useState(false);
+  const [etapaAtual, setEtapaAtual] = useState(null);
   const [report, setReport] = useState(null);
   const [error, setError] = useState(null);
   const [dragOver, setDragOver] = useState(false);
@@ -28,6 +32,14 @@ export default function App() {
     setReport(null);
     setError(null);
 
+    // Simula progressão visual entre etapas enquanto aguarda resposta
+    let etapaIdx = 0;
+    setEtapaAtual(ETAPAS[0]);
+    const intervalo = setInterval(() => {
+      etapaIdx = (etapaIdx + 1) % ETAPAS.length;
+      setEtapaAtual(ETAPAS[etapaIdx]);
+    }, 4000);
+
     const form = new FormData();
     files.forEach((f) => form.append("files", f));
     form.append("threshold", threshold);
@@ -40,7 +52,9 @@ export default function App() {
     } catch (e) {
       setError(e.message);
     } finally {
+      clearInterval(intervalo);
       setLoading(false);
+      setEtapaAtual(null);
     }
   };
 
@@ -50,400 +64,163 @@ export default function App() {
     return "var(--red)";
   };
 
+  const etapaLabel = {
+    analyzer: "Analisando o codigo...",
+    writer: "Gerando testes...",
+    executor: "Executando testes...",
+    reviewer: "Revisando cobertura...",
+  };
+
   return (
     <>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap');
-
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
         :root {
-          --bg:        #0f1318;
-          --surface:   #151a21;
-          --surface2:  #1c2330;
-          --border:    #252d3a;
-          --border2:   #2e3848;
-          --text:      #cdd6e0;
-          --muted:     #4e5f72;
-          --accent:    #4d9de0;
-          --accent-dim:#1a3a56;
-          --green:     #4caf82;
-          --amber:     #d4a94a;
-          --red:       #c05c5c;
-          --shadow:    0 4px 24px rgba(0,0,0,.35);
+          --bg:       #141820;
+          --surface:  #1e2530;
+          --surface2: #26303f;
+          --border:   #334155;
+          --border2:  #3d5068;
+          --text:     #e2eaf4;
+          --muted:    #7a95b0;
+          --accent:   #5aabf0;
+          --accent-dim:#1d3d5a;
+          --green:    #5ec490;
+          --amber:    #e0b84e;
+          --red:      #e06c6c;
+          --shadow:   0 4px 24px rgba(0,0,0,.4);
         }
+        body { font-family:'IBM Plex Sans',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; font-size:15px; }
+        .shell { display:grid; grid-template-columns:320px 1fr; min-height:100vh; }
 
-        body {
-          font-family: 'IBM Plex Sans', sans-serif;
-          background: var(--bg);
-          color: var(--text);
-          min-height: 100vh;
-          font-size: 14px;
-        }
+        /* SIDEBAR */
+        .sidebar { background:var(--surface); border-right:1px solid var(--border); padding:40px 28px; display:flex; flex-direction:column; gap:36px; position:sticky; top:0; height:100vh; overflow-y:auto; }
+        .logo { display:flex; align-items:center; gap:12px; padding-bottom:28px; border-bottom:1px solid var(--border); }
+        .logo-icon { width:36px; height:36px; background:var(--accent-dim); border:1px solid var(--accent); border-radius:7px; display:flex; align-items:center; justify-content:center; font-size:17px; }
+        .logo-text { font-family:'IBM Plex Mono',monospace; font-size:14px; font-weight:500; color:var(--text); line-height:1.3; }
+        .logo-text small { display:block; font-size:11px; color:var(--muted); font-weight:400; margin-top:2px; }
 
-        .shell {
-          display: grid;
-          grid-template-columns: 300px 1fr;
-          min-height: 100vh;
-        }
+        .section-label { font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); margin-bottom:12px; }
 
-        /* ── SIDEBAR ── */
-        .sidebar {
-          background: var(--surface);
-          border-right: 1px solid var(--border);
-          padding: 36px 24px;
-          display: flex;
-          flex-direction: column;
-          gap: 32px;
-          position: sticky;
-          top: 0;
-          height: 100vh;
-          overflow-y: auto;
-        }
+        .dropzone { border:1.5px dashed var(--border2); border-radius:9px; padding:28px 20px; text-align:center; cursor:pointer; transition:border-color .2s,background .2s; }
+        .dropzone:hover,.dropzone.over { border-color:var(--accent); background:var(--accent-dim); }
+        .dropzone p { font-size:13px; color:var(--muted); line-height:1.7; }
+        .dropzone strong { color:var(--accent); font-weight:500; }
 
-        .logo {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          padding-bottom: 24px;
-          border-bottom: 1px solid var(--border);
-        }
-        .logo-icon {
-          width: 32px; height: 32px;
-          background: var(--accent-dim);
-          border: 1px solid var(--accent);
-          border-radius: 6px;
-          display: flex; align-items: center; justify-content: center;
-          font-size: 15px;
-        }
-        .logo-text {
-          font-family: 'IBM Plex Mono', monospace;
-          font-size: 13px;
-          font-weight: 500;
-          color: var(--text);
-          line-height: 1.3;
-        }
-        .logo-text small {
-          display: block;
-          font-size: 10px;
-          color: var(--muted);
-          font-weight: 400;
-        }
+        .file-list { display:flex; flex-direction:column; gap:7px; }
+        .file-item { display:flex; align-items:center; justify-content:space-between; background:var(--surface2); border:1px solid var(--border); border-radius:7px; padding:9px 14px; animation:fadeUp .15s ease; }
+        .file-item span { font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:210px; }
+        .file-item button { background:none; border:none; cursor:pointer; color:var(--muted); font-size:16px; padding:0 0 0 8px; flex-shrink:0; transition:color .15s; }
+        .file-item button:hover { color:var(--red); }
 
-        /* SECTION LABEL */
-        .section-label {
-          font-family: 'IBM Plex Mono', monospace;
-          font-size: 10px;
-          letter-spacing: .12em;
-          text-transform: uppercase;
-          color: var(--muted);
-          margin-bottom: 10px;
-        }
+        .threshold-row { display:flex; align-items:center; gap:14px; }
+        input[type=range] { flex:1; accent-color:var(--accent); cursor:pointer; height:3px; }
+        .threshold-val { font-family:'IBM Plex Mono',monospace; font-size:20px; font-weight:500; color:var(--accent); min-width:48px; text-align:right; }
 
-        /* DROPZONE */
-        .dropzone {
-          border: 1px dashed var(--border2);
-          border-radius: 8px;
-          padding: 24px 16px;
-          text-align: center;
-          cursor: pointer;
-          transition: border-color .2s, background .2s;
-        }
-        .dropzone:hover, .dropzone.over {
-          border-color: var(--accent);
-          background: var(--accent-dim);
-        }
-        .dropzone-icon { font-size: 24px; margin-bottom: 8px; display: block; opacity: .6; }
-        .dropzone p { font-size: 12px; color: var(--muted); line-height: 1.6; }
-        .dropzone strong { color: var(--accent); font-weight: 500; }
+        .btn { width:100%; padding:14px; background:var(--accent); color:#0a1520; border:none; border-radius:8px; font-family:'IBM Plex Mono',monospace; font-size:13px; font-weight:500; letter-spacing:.06em; cursor:pointer; transition:opacity .2s,transform .15s; margin-top:auto; }
+        .btn:hover:not(:disabled) { opacity:.85; transform:translateY(-1px); }
+        .btn:disabled { opacity:.3; cursor:not-allowed; }
 
-        /* FILE LIST */
-        .file-list { display: flex; flex-direction: column; gap: 6px; }
-        .file-item {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          background: var(--surface2);
-          border: 1px solid var(--border);
-          border-radius: 6px;
-          padding: 8px 12px;
-          animation: fadeUp .15s ease;
-        }
-        .file-item span {
-          font-family: 'IBM Plex Mono', monospace;
-          font-size: 11px;
-          color: var(--text);
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
-          max-width: 190px;
-        }
-        .file-item button {
-          background: none; border: none; cursor: pointer;
-          color: var(--muted); font-size: 15px;
-          padding: 0 0 0 8px; flex-shrink: 0;
-          transition: color .15s;
-        }
-        .file-item button:hover { color: var(--red); }
+        /* MAIN */
+        .main { padding:52px 56px; display:flex; flex-direction:column; gap:40px; }
+        .main-header { border-bottom:1px solid var(--border); padding-bottom:32px; }
+        .main-header h1 { font-family:'IBM Plex Mono',monospace; font-size:22px; font-weight:500; color:var(--text); margin-bottom:10px; }
+        .main-header p { font-size:14px; color:var(--muted); line-height:1.8; max-width:540px; font-weight:300; }
 
-        /* THRESHOLD */
-        .threshold-row { display: flex; align-items: center; gap: 12px; }
-        input[type=range] {
-          flex: 1; accent-color: var(--accent);
-          cursor: pointer; height: 2px;
-        }
-        .threshold-val {
-          font-family: 'IBM Plex Mono', monospace;
-          font-size: 18px;
-          font-weight: 500;
-          color: var(--accent);
-          min-width: 44px;
-          text-align: right;
-        }
+        /* PIPELINE */
+        .pipeline { display:flex; align-items:center; flex-wrap:wrap; gap:6px; }
+        .step { display:flex; align-items:center; gap:9px; background:var(--surface); border:1px solid var(--border); border-radius:7px; padding:10px 16px; font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--muted); transition:all .3s; }
+        .step.ativa { border-color:var(--accent); color:var(--accent); background:var(--accent-dim); }
+        .step.concluida { border-color:var(--green); color:var(--green); background:rgba(94,196,144,.08); }
+        .step-dot { width:7px; height:7px; border-radius:50%; background:currentColor; }
+        .step.ativa .step-dot { animation:pulso 1s infinite; }
+        .step-arrow { color:var(--border2); font-size:18px; }
 
-        /* BUTTON */
-        .btn {
-          width: 100%;
-          padding: 12px;
-          background: var(--accent);
-          color: #0a1520;
-          border: none;
-          border-radius: 7px;
-          font-family: 'IBM Plex Mono', monospace;
-          font-size: 12px;
-          font-weight: 500;
-          letter-spacing: .06em;
-          cursor: pointer;
-          transition: opacity .2s, transform .15s;
-          margin-top: auto;
-        }
-        .btn:hover:not(:disabled) { opacity: .85; transform: translateY(-1px); }
-        .btn:disabled { opacity: .3; cursor: not-allowed; }
-
-        /* ── MAIN ── */
-        .main {
-          padding: 48px 52px;
-          display: flex;
-          flex-direction: column;
-          gap: 36px;
-        }
-
-        .main-header {
-          border-bottom: 1px solid var(--border);
-          padding-bottom: 28px;
-        }
-        .main-header h1 {
-          font-family: 'IBM Plex Mono', monospace;
-          font-size: 20px;
-          font-weight: 500;
-          color: var(--text);
-          margin-bottom: 8px;
-        }
-        .main-header p {
-          font-size: 13px;
-          color: var(--muted);
-          line-height: 1.7;
-          max-width: 520px;
-          font-weight: 300;
-        }
-
-        /* PIPELINE STEPS */
-        .pipeline {
-          display: flex;
-          align-items: center;
-          gap: 0;
-          flex-wrap: wrap;
-          gap: 4px;
-        }
-        .step {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          background: var(--surface);
-          border: 1px solid var(--border);
-          border-radius: 6px;
-          padding: 8px 14px;
-          font-family: 'IBM Plex Mono', monospace;
-          font-size: 11px;
-          color: var(--muted);
-        }
-        .step.active { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
-        .step-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
-        .step-arrow { color: var(--border2); font-size: 16px; padding: 0 2px; }
+        /* ETAPA LABEL */
+        .etapa-status { font-family:'IBM Plex Mono',monospace; font-size:13px; color:var(--accent); letter-spacing:.04em; }
+        .loader-bar { width:100%; max-width:320px; height:2px; background:var(--border); border-radius:2px; overflow:hidden; margin-top:8px; }
+        .loader-bar::after { content:''; display:block; height:100%; width:40%; background:var(--accent); border-radius:2px; animation:slide 1.4s infinite ease-in-out; }
 
         /* EMPTY */
-        .empty {
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          gap: 12px;
-          color: var(--muted);
-          text-align: center;
-          padding: 80px 0;
-        }
-        .empty-icon { font-size: 40px; opacity: .25; }
-        .empty p { font-size: 13px; font-weight: 300; max-width: 260px; line-height: 1.7; }
-
-        /* LOADER */
-        .loader {
-          display: flex; flex-direction: column;
-          align-items: center; gap: 20px;
-          padding: 80px 0; color: var(--muted);
-        }
-        .loader-bar {
-          width: 200px; height: 2px;
-          background: var(--border);
-          border-radius: 2px;
-          overflow: hidden;
-        }
-        .loader-bar::after {
-          content: '';
-          display: block;
-          height: 100%;
-          width: 40%;
-          background: var(--accent);
-          border-radius: 2px;
-          animation: slide 1.4s infinite ease-in-out;
-        }
-        .loader p { font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: .06em; }
+        .empty { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; color:var(--muted); text-align:center; padding:80px 0; }
+        .empty p { font-size:14px; font-weight:300; max-width:300px; line-height:1.8; }
 
         /* REPORT */
-        .report { display: flex; flex-direction: column; gap: 24px; animation: fadeUp .3s ease; }
+        .report { display:flex; flex-direction:column; gap:28px; animation:fadeUp .3s ease; }
 
-        /* COVERAGE HERO */
-        .coverage-hero {
-          background: var(--surface);
-          border: 1px solid var(--border);
-          border-radius: 10px;
-          padding: 28px 32px;
-          display: flex;
-          align-items: center;
-          gap: 36px;
-        }
-        .coverage-ring { position: relative; width: 88px; height: 88px; flex-shrink: 0; }
-        .coverage-ring svg { transform: rotate(-90deg); }
-        .ring-bg { fill: none; stroke: var(--border2); stroke-width: 7; }
-        .ring-fill { fill: none; stroke-width: 7; stroke-linecap: round; }
-        .ring-label {
-          position: absolute; inset: 0;
-          display: flex; flex-direction: column;
-          align-items: center; justify-content: center;
-        }
-        .ring-label strong {
-          font-family: 'IBM Plex Mono', monospace;
-          font-size: 18px; font-weight: 500; line-height: 1;
-        }
-        .ring-label small { font-size: 9px; color: var(--muted); letter-spacing: .08em; margin-top: 2px; }
+        .coverage-hero { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:32px 36px; display:flex; align-items:center; gap:40px; box-shadow:var(--shadow); }
+        .coverage-ring { position:relative; width:96px; height:96px; flex-shrink:0; }
+        .coverage-ring svg { transform:rotate(-90deg); }
+        .ring-bg { fill:none; stroke:var(--border2); stroke-width:7; }
+        .ring-fill { fill:none; stroke-width:7; stroke-linecap:round; }
+        .ring-label { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+        .ring-label strong { font-family:'IBM Plex Mono',monospace; font-size:20px; font-weight:500; line-height:1; }
+        .ring-label small { font-size:10px; color:var(--muted); letter-spacing:.08em; margin-top:3px; }
 
-        .coverage-meta h2 {
-          font-family: 'IBM Plex Mono', monospace;
-          font-size: 16px; font-weight: 500; margin-bottom: 6px;
-        }
-        .coverage-meta p { font-size: 13px; color: var(--muted); line-height: 1.6; font-weight: 300; }
-        .meta-pills { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
-        .pill {
-          padding: 4px 10px;
-          border-radius: 4px;
-          font-family: 'IBM Plex Mono', monospace;
-          font-size: 11px;
-          border: 1px solid var(--border2);
-          color: var(--muted);
-          background: var(--surface2);
-        }
-        .pill.accent { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+        .coverage-meta h2 { font-family:'IBM Plex Mono',monospace; font-size:18px; font-weight:500; margin-bottom:8px; }
+        .coverage-meta p { font-size:14px; color:var(--muted); line-height:1.7; font-weight:300; }
+        .meta-pills { display:flex; gap:9px; margin-top:16px; flex-wrap:wrap; }
+        .pill { padding:5px 12px; border-radius:5px; font-family:'IBM Plex Mono',monospace; font-size:12px; border:1px solid var(--border2); color:var(--muted); background:var(--surface2); }
+        .pill.accent { border-color:var(--accent); color:var(--accent); background:var(--accent-dim); }
+        .pill.green { border-color:var(--green); color:var(--green); background:rgba(94,196,144,.1); }
+        .pill.red { border-color:var(--red); color:var(--red); background:rgba(224,108,108,.1); }
 
-        /* CARDS GRID */
-        .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-        .card {
-          background: var(--surface);
-          border: 1px solid var(--border);
-          border-radius: 10px;
-          padding: 24px;
-        }
-        .card h3 {
-          font-family: 'IBM Plex Mono', monospace;
-          font-size: 10px; letter-spacing: .12em;
-          text-transform: uppercase; color: var(--muted);
-          margin-bottom: 16px;
-        }
+        /* STATS */
+        .stats-row { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+        .stat-card { background:var(--surface); border:1px solid var(--border); border-radius:11px; padding:22px 26px; }
+        .stat-label { font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); margin-bottom:12px; }
+        .stat-value { font-family:'IBM Plex Mono',monospace; font-size:32px; font-weight:500; line-height:1; }
 
-        /* UNCOVERED */
-        .uncovered-list { display: flex; flex-direction: column; gap: 8px; }
-        .uncovered-file {
-          background: var(--surface2);
-          border: 1px solid var(--border);
-          border-radius: 6px;
-          padding: 10px 14px;
-        }
-        .uncovered-file .fname {
-          font-family: 'IBM Plex Mono', monospace;
-          font-size: 11px; font-weight: 500;
-          color: var(--text); margin-bottom: 8px;
-        }
-        .lines { display: flex; flex-wrap: wrap; gap: 5px; }
-        .line-badge {
-          background: rgba(192,92,92,.12);
-          border: 1px solid rgba(192,92,92,.25);
-          color: var(--red);
-          font-family: 'IBM Plex Mono', monospace;
-          font-size: 10px; padding: 2px 7px;
-          border-radius: 3px;
-        }
+        /* REPORT LINK */
+        .report-link { display:flex; align-items:center; justify-content:space-between; background:var(--surface); border:1px solid var(--accent); border-radius:11px; padding:20px 26px; text-decoration:none; transition:background .2s; }
+        .report-link:hover { background:var(--accent-dim); }
+        .report-link-left { display:flex; flex-direction:column; gap:5px; }
+        .report-link-left span { font-family:'IBM Plex Mono',monospace; font-size:14px; color:var(--accent); font-weight:500; }
+        .report-link-left small { font-size:13px; color:var(--muted); }
+        .report-link-arrow { font-size:22px; color:var(--accent); }
 
-        /* CODE */
-        .code-wrap { grid-column: 1 / -1; }
-        .code-block {
-          background: #0a0e13;
-          border: 1px solid var(--border);
-          border-radius: 8px;
-          padding: 24px;
-          overflow-x: auto;
-          max-height: 420px;
-        }
-        .code-block pre {
-          font-family: 'IBM Plex Mono', monospace;
-          font-size: 12px; line-height: 1.75;
-          color: #8bacc8; white-space: pre-wrap; word-break: break-all;
-        }
+        /* CARDS */
+        .cards { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+        .card { background:var(--surface); border:1px solid var(--border); border-radius:11px; padding:26px; }
+        .card h3 { font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); margin-bottom:18px; }
+        .uncovered-list { display:flex; flex-direction:column; gap:9px; }
+        .uncovered-file { background:var(--surface2); border:1px solid var(--border); border-radius:7px; padding:12px 16px; }
+        .uncovered-file .fname { font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:500; color:var(--text); margin-bottom:9px; }
+        .lines { display:flex; flex-wrap:wrap; gap:6px; }
+        .line-badge { background:rgba(224,108,108,.12); border:1px solid rgba(224,108,108,.28); color:var(--red); font-family:'IBM Plex Mono',monospace; font-size:11px; padding:3px 8px; border-radius:4px; }
 
-        /* ERROR */
-        .error-box {
-          background: rgba(192,92,92,.08);
-          border: 1px solid rgba(192,92,92,.25);
-          border-radius: 8px; padding: 16px 20px;
-          color: var(--red); font-size: 13px; line-height: 1.6;
-          font-family: 'IBM Plex Mono', monospace;
-        }
+        .failed-item { background:var(--surface2); border:1px solid rgba(224,108,108,.3); border-radius:7px; padding:12px 16px; }
+        .failed-name { font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:500; color:var(--red); margin-bottom:6px; }
+        .failed-msg { font-size:12px; color:var(--muted); font-family:'IBM Plex Mono',monospace; line-height:1.6; }
 
-        @keyframes slide {
-          0%   { transform: translateX(-100%); }
-          50%  { transform: translateX(250%); }
-          100% { transform: translateX(250%); }
-        }
-        @keyframes fadeUp {
-          from { opacity: 0; transform: translateY(6px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
+        .code-wrap { grid-column:1/-1; }
+        .code-block { background:#0d1117; border:1px solid var(--border); border-radius:9px; padding:26px; overflow-x:auto; max-height:440px; }
+        .code-block pre { font-family:'IBM Plex Mono',monospace; font-size:13px; line-height:1.8; color:#93b4d0; white-space:pre-wrap; word-break:break-all; }
 
-        @media (max-width: 860px) {
-          .shell { grid-template-columns: 1fr; }
-          .sidebar { position: static; height: auto; }
-          .main { padding: 28px 20px; }
-          .cards { grid-template-columns: 1fr; }
-          .coverage-hero { flex-direction: column; }
+        .error-box { background:rgba(224,108,108,.08); border:1px solid rgba(224,108,108,.28); border-radius:9px; padding:18px 22px; color:var(--red); font-size:14px; line-height:1.7; font-family:'IBM Plex Mono',monospace; }
+
+        @keyframes slide { 0%{transform:translateX(-100%)} 50%{transform:translateX(250%)} 100%{transform:translateX(250%)} }
+        @keyframes fadeUp { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes pulso { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+        @media(max-width:900px){
+          .shell{grid-template-columns:1fr}
+          .sidebar{position:static;height:auto}
+          .main{padding:32px 24px}
+          .cards{grid-template-columns:1fr}
+          .coverage-hero{flex-direction:column}
+          .stats-row{grid-template-columns:1fr 1fr}
         }
       `}</style>
 
       <div className="shell">
-        {/* SIDEBAR */}
         <aside className="sidebar">
           <div className="logo">
-            <div className="logo-icon">🧪</div>
+            <div className="logo-icon">A</div>
             <div className="logo-text">
-              autotest
-              <small>multi-agent · pytest</small>
+              AutoTest
+              <small>multi-agente · pytest</small>
             </div>
           </div>
 
@@ -456,13 +233,8 @@ export default function App() {
               onDragLeave={() => setDragOver(false)}
               onDrop={(e) => { e.preventDefault(); setDragOver(false); handleFiles(e.dataTransfer.files); }}
             >
-              <span className="dropzone-icon">📂</span>
               <p>Arraste arquivos <strong>.py</strong> aqui<br />ou clique para selecionar</p>
-              <input
-                ref={inputRef} type="file" accept=".py" multiple
-                style={{ display: "none" }}
-                onChange={(e) => handleFiles(e.target.files)}
-              />
+              <input ref={inputRef} type="file" accept=".py" multiple style={{ display: "none" }} onChange={(e) => handleFiles(e.target.files)} />
             </div>
           </div>
 
@@ -473,7 +245,7 @@ export default function App() {
                 {files.map((f) => (
                   <div className="file-item" key={f.name}>
                     <span>{f.name}</span>
-                    <button onClick={() => removeFile(f.name)}>×</button>
+                    <button onClick={() => removeFile(f.name)}>x</button>
                   </div>
                 ))}
               </div>
@@ -481,80 +253,123 @@ export default function App() {
           )}
 
           <div>
-            <p className="section-label">Threshold de cobertura</p>
+            <p className="section-label">Cobertura minima</p>
             <div className="threshold-row">
-              <input
-                type="range" min={50} max={100} step={5}
-                value={threshold}
-                onChange={(e) => setThreshold(Number(e.target.value))}
-              />
+              <input type="range" min={50} max={100} step={5} value={threshold} onChange={(e) => setThreshold(Number(e.target.value))} />
               <span className="threshold-val">{threshold}%</span>
             </div>
           </div>
 
           <button className="btn" disabled={!files.length || loading} onClick={handleSubmit}>
-            {loading ? "ANALISANDO..." : "GERAR TESTES →"}
+            {loading ? "PROCESSANDO..." : "GERAR TESTES"}
           </button>
         </aside>
 
-        {/* MAIN */}
         <main className="main">
           <div className="main-header">
-            <h1>// multi-agent-autotest</h1>
+            <h1>// AutoTest Multi-Agente</h1>
             <p>
               Envie seus arquivos Python, defina o threshold e os agentes
-              analisam, geram, executam e iteram os testes até atingir a meta de cobertura.
+              analisam, geram, executam e iteram os testes automaticamente
+              ate atingir a meta de cobertura.
             </p>
           </div>
 
-          {/* PIPELINE VISUAL */}
-          <div className="pipeline">
-            {["analyzer", "writer", "executor", "reviewer"].map((s, i) => (
-              <>
-                <div className={`step ${loading ? "active" : ""}`} key={s}>
-                  <span className="step-dot" />
-                  {s}
-                </div>
-                {i < 3 && <span className="step-arrow" key={`a${i}`}>→</span>}
-              </>
-            ))}
+          {/* PIPELINE */}
+          <div>
+            <div className="pipeline">
+              {ETAPAS.map((s, i) => {
+                const etapaIdx = etapaAtual ? ETAPAS.indexOf(etapaAtual) : -1;
+                const ativa = s === etapaAtual;
+                const concluida = !loading && report && etapaIdx === -1;
+                return (
+                  <span key={`wrap-${s}`} style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                    <div className={`step${ativa ? " ativa" : ""}${concluida ? " concluida" : ""}`}>
+                      <span className="step-dot" />
+                      {s}
+                    </div>
+                    {i < ETAPAS.length - 1 && <span className="step-arrow">→</span>}
+                  </span>
+                );
+              })}
+            </div>
+
+            {loading && etapaAtual && (
+              <div style={{ marginTop: "16px" }}>
+                <div className="etapa-status">{etapaLabel[etapaAtual]}</div>
+                <div className="loader-bar" />
+              </div>
+            )}
           </div>
 
           {!loading && !report && !error && (
             <div className="empty">
-              <span className="empty-icon">⬡</span>
-              <p>Adicione arquivos .py na barra lateral para iniciar a análise.</p>
+              <p>Adicione arquivos .py na barra lateral para iniciar a analise.</p>
             </div>
           )}
 
-          {loading && (
-            <div className="loader">
-              <div className="loader-bar" />
-              <p>AGENTS RUNNING...</p>
-            </div>
-          )}
-
-          {error && <div className="error-box">// ERROR: {error}</div>}
+          {error && <div className="error-box">Erro: {error}</div>}
 
           {report && (
             <div className="report">
               <div className="coverage-hero">
                 <CoverageRing pct={report.coverage_pct} color={coverageColor(report.coverage_pct)} />
                 <div className="coverage-meta">
-                  <h2>{report.coverage_pct >= threshold ? "// threshold reached" : "// partial coverage"}</h2>
+                  <h2>{report.coverage_pct >= threshold ? "// Meta atingida" : "// Cobertura parcial"}</h2>
                   <p>{report.review_reason}</p>
                   <div className="meta-pills">
-                    <span className="pill accent">{report.coverage_pct}% covered</span>
-                    <span className="pill">{report.iteration} iteration{report.iteration !== 1 ? "s" : ""}</span>
-                    <span className="pill">{files.length} file{files.length > 1 ? "s" : ""}</span>
+                    <span className="pill accent">{report.coverage_pct}% coberto</span>
+                    <span className="pill">{report.iteration} iteracao{report.iteration !== 1 ? "s" : ""}</span>
+                    <span className="pill">{files.length} arquivo{files.length > 1 ? "s" : ""}</span>
+                    {report.tests_passed > 0 && <span className="pill green">{report.tests_passed} passaram</span>}
+                    {report.tests_failed > 0 && <span className="pill red">{report.tests_failed} falharam</span>}
                   </div>
                 </div>
               </div>
 
+              <div className="stats-row">
+                <div className="stat-card">
+                  <div className="stat-label">Cobertura</div>
+                  <div className="stat-value" style={{ color: coverageColor(report.coverage_pct) }}>{report.coverage_pct}%</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-label">Testes passaram</div>
+                  <div className="stat-value" style={{ color: "var(--green)" }}>{report.tests_passed}</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-label">Testes falharam</div>
+                  <div className="stat-value" style={{ color: report.tests_failed > 0 ? "var(--red)" : "var(--muted)" }}>{report.tests_failed}</div>
+                </div>
+              </div>
+
+              {report.report_url && (
+                <a className="report-link" href={`${BACKEND_URL}${report.report_url}`} target="_blank" rel="noreferrer">
+                  <div className="report-link-left">
+                    <span>Abrir Relatorio de Cobertura</span>
+                    <small>Relatorio completo linha por linha gerado pelo pytest-cov</small>
+                  </div>
+                  <span className="report-link-arrow">→</span>
+                </a>
+              )}
+
+              {report.failed_tests?.length > 0 && (
+                <div className="card code-wrap">
+                  <h3>Testes que falharam</h3>
+                  <div className="uncovered-list">
+                    {report.failed_tests.map((t, i) => (
+                      <div className="failed-item" key={i}>
+                        <div className="failed-name">{t.split(":")[0]}</div>
+                        <div className="failed-msg">{t.split(":").slice(1).join(":").trim()}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <div className="cards">
                 {Object.keys(report.uncovered_lines || {}).length > 0 && (
                   <div className="card">
-                    <h3>Linhas não cobertas</h3>
+                    <h3>Linhas nao cobertas</h3>
                     <div className="uncovered-list">
                       {Object.entries(report.uncovered_lines).map(([file, lines]) => (
                         <div className="uncovered-file" key={file}>
@@ -584,21 +399,18 @@ export default function App() {
 }
 
 function CoverageRing({ pct, color }) {
-  const r = 36;
+  const r = 38;
   const circ = 2 * Math.PI * r;
   const offset = circ - (pct / 100) * circ;
   return (
     <div className="coverage-ring">
-      <svg width="88" height="88" viewBox="0 0 88 88">
-        <circle className="ring-bg" cx="44" cy="44" r={r} />
-        <circle
-          className="ring-fill" cx="44" cy="44" r={r}
-          stroke={color} strokeDasharray={circ} strokeDashoffset={offset}
-        />
+      <svg width="96" height="96" viewBox="0 0 96 96">
+        <circle className="ring-bg" cx="48" cy="48" r={r} />
+        <circle className="ring-fill" cx="48" cy="48" r={r} stroke={color} strokeDasharray={circ} strokeDashoffset={offset} />
       </svg>
       <div className="ring-label">
         <strong style={{ color }}>{pct}%</strong>
-        <small>COV</small>
+        <small>COB</small>
       </div>
     </div>
   );
