@@ -159,8 +159,8 @@ O fluxo possui bifurcação e iteração condicional. Um grafo representa melhor
 | `library.py` (sistema de biblioteca) | 96% | 1 |
 | `executor.py` (infraestrutura com Docker) | 49% | 5 |
 
-![Resultado sample_code](assets/result_sample_code.png)
-![Resultado library](assets/result_library.png)
+![Resultado sample_code](multi-agent-autotest/assets/result_sample_code.png)
+![Resultado library](multi-agent-autotest/assets/result_library.png)
 
 ---
 
