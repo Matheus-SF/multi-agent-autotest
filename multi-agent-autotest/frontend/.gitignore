@@ -23,4 +23,9 @@ dist-ssr
 *.sln
 *.sw?
 
-reports
+# Reports gerados pelo sistema
+backend/reports/
+*.xml
+*.coverage
+htmlcov/
+.pytest_cache/
