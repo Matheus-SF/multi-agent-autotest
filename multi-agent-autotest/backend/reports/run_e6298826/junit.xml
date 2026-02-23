@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="7" skipped="0" tests="10" time="0.125" timestamp="2026-02-23T13:46:47.429799+00:00" hostname="26432ee3bd7e"><testcase classname="test_generated" name="test_run_tests_happy_path" time="0.007" /><testcase classname="test_generated" name="test_run_tests_code_dir_not_exist" time="0.001"><failure message="AssertionError: assert ''&#10; +  where '' = CoverageResult(success=False, coverage_pct=0.0, uncovered_lines={}, tests_passed=0, tests_failed=0, failed_tests=None, error_output='').error_output">mock_subprocess_run = &lt;MagicMock name='run' id='129678270348176'&gt;
+mock_path_exists = &lt;MagicMock name='exists' id='129678270562128'&gt;
+
+    def test_run_tests_code_dir_not_exist(mock_subprocess_run, mock_path_exists):
+        mock_subprocess_run.side_effect = FileNotFoundError
+        mock_path_exists.side_effect = lambda: False
+    
+        result = run_tests('/nonexistent/code_dir', '/fake/tests_dir')
+    
+        assert not result.success
+&gt;       assert result.error_output
+E       AssertionError: assert ''
+E        +  where '' = CoverageResult(success=False, coverage_pct=0.0, uncovered_lines={}, tests_passed=0, tests_failed=0, failed_tests=None, error_output='').error_output
+
+/tests/test_generated.py:38: AssertionError</failure></testcase><testcase classname="test_generated" name="test_run_tests_tests_dir_not_exist" time="0.001"><failure message="AssertionError: assert ''&#10; +  where '' = CoverageResult(success=False, coverage_pct=0.0, uncovered_lines={}, tests_passed=0, tests_failed=0, failed_tests=None, error_output='').error_output">mock_subprocess_run = &lt;MagicMock name='run' id='129678270561936'&gt;
+mock_path_exists = &lt;MagicMock name='exists' id='129678270779728'&gt;
+
+    def test_run_tests_tests_dir_not_exist(mock_subprocess_run, mock_path_exists):
+        mock_subprocess_run.side_effect = FileNotFoundError
+        mock_path_exists.side_effect = lambda: False
+    
+        result = run_tests('/fake/code_dir', '/nonexistent/tests_dir')
+    
+        assert not result.success
+&gt;       assert result.error_output
+E       AssertionError: assert ''
+E        +  where '' = CoverageResult(success=False, coverage_pct=0.0, uncovered_lines={}, tests_passed=0, tests_failed=0, failed_tests=None, error_output='').error_output
+
+/tests/test_generated.py:47: AssertionError</failure></testcase><testcase classname="test_generated" name="test_run_tests_timeout" time="0.001"><failure message="NameError: name 'subprocess' is not defined">mock_subprocess_run = &lt;MagicMock name='run' id='129678279836112'&gt;
+
+    def test_run_tests_timeout(mock_subprocess_run):
+&gt;       mock_subprocess_run.side_effect = subprocess.TimeoutExpired(cmd='docker', timeout=120)
+                                          ^^^^^^^^^^
+E       NameError: name 'subprocess' is not defined
+
+/tests/test_generated.py:50: NameError</failure></testcase><testcase classname="test_generated" name="test_parse_coverage_happy_path" time="0.002" /><testcase classname="test_generated" name="test_parse_coverage_file_not_exist" time="0.001" /><testcase classname="test_generated" name="test_parse_coverage_malformed_xml" time="0.001"><failure message="NameError: name 'ET' is not defined">mock_et_parse = &lt;MagicMock name='parse' id='129678270852240'&gt;
+
+    def test_parse_coverage_malformed_xml(mock_et_parse):
+&gt;       mock_et_parse.side_effect = ET.ParseError
+                                    ^^
+E       NameError: name 'ET' is not defined
+
+/tests/test_generated.py:71: NameError</failure></testcase><testcase classname="test_generated" name="test_parse_junit_happy_path" time="0.005"><failure message="assert -1 == 7">mock_et_parse = &lt;MagicMock name='parse' id='129678270862032'&gt;
+
+    def test_parse_junit_happy_path(mock_et_parse):
+        mock_et_parse.return_value.getroot.return_value.attrib = {'tests': '10', 'failures': '2', 'errors': '1'}
+        mock_et_parse.return_value.getroot.return_value.iter.return_value = []
+    
+        passed, failed, failed_tests = _parse_junit(Path('/fake/junit.xml'))
+    
+&gt;       assert passed == 7
+E       assert -1 == 7
+
+/tests/test_generated.py:84: AssertionError</failure></testcase><testcase classname="test_generated" name="test_parse_junit_file_not_exist" time="0.001"><failure message="Failed: DID NOT RAISE &lt;class 'FileNotFoundError'&gt;">def test_parse_junit_file_not_exist():
+&gt;       with pytest.raises(FileNotFoundError):
+E       Failed: DID NOT RAISE &lt;class 'FileNotFoundError'&gt;
+
+/tests/test_generated.py:88: Failed</failure></testcase><testcase classname="test_generated" name="test_parse_junit_malformed_xml" time="0.001"><failure message="NameError: name 'ET' is not defined">mock_et_parse = &lt;MagicMock name='parse' id='129678270892944'&gt;
+
+    def test_parse_junit_malformed_xml(mock_et_parse):
+&gt;       mock_et_parse.side_effect = ET.ParseError
+                                    ^^
+E       NameError: name 'ET' is not defined
+
+/tests/test_generated.py:92: NameError</failure></testcase></testsuite></testsuites>

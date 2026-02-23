@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="4" skipped="0" tests="8" time="0.148" timestamp="2026-02-23T13:53:28.860317+00:00" hostname="405f1299cb03"><testcase classname="test_generated" name="test_run_tests_happy_path" time="0.007" /><testcase classname="test_generated" name="test_run_tests_code_dir_not_exist" time="0.002" /><testcase classname="test_generated" name="test_run_tests_tests_dir_not_exist" time="0.004" /><testcase classname="test_generated" name="test_run_tests_timeout" time="0.004"><failure message="NameError: name 'subprocess' is not defined">mock_subprocess_run = &lt;MagicMock name='run' id='126086435273616'&gt;
+
+    def test_run_tests_timeout(mock_subprocess_run):
+&gt;       mock_subprocess_run.side_effect = subprocess.TimeoutExpired(cmd='docker run', timeout=120)
+                                          ^^^^^^^^^^
+E       NameError: name 'subprocess' is not defined
+
+/tests/test_generated.py:50: NameError</failure></testcase><testcase classname="test_generated" name="test_parse_coverage_happy_path" time="0.002" /><testcase classname="test_generated" name="test_parse_coverage_malformed_xml" time="0.001"><failure message="NameError: name 'ET' is not defined">mock_et_parse = &lt;MagicMock name='parse' id='126086435541584'&gt;
+
+    def test_parse_coverage_malformed_xml(mock_et_parse):
+&gt;       mock_et_parse.side_effect = ET.ParseError
+                                    ^^
+E       NameError: name 'ET' is not defined
+
+/tests/test_generated.py:67: NameError</failure></testcase><testcase classname="test_generated" name="test_parse_junit_happy_path" time="0.006"><failure message="assert -1 == 7">mock_et_parse = &lt;MagicMock name='parse' id='126086435042448'&gt;
+
+    def test_parse_junit_happy_path(mock_et_parse):
+        mock_et_parse.return_value.getroot.return_value.attrib = {"tests": "10", "failures": "2", "errors": "1"}
+        mock_et_parse.return_value.getroot.return_value.iter.return_value = []
+    
+        passed, failed, failed_tests = _parse_junit(Path('/fake/junit.xml'))
+    
+&gt;       assert passed == 7
+E       assert -1 == 7
+
+/tests/test_generated.py:80: AssertionError</failure></testcase><testcase classname="test_generated" name="test_parse_junit_malformed_xml" time="0.001"><failure message="NameError: name 'ET' is not defined">mock_et_parse = &lt;MagicMock name='parse' id='126086435570896'&gt;
+
+    def test_parse_junit_malformed_xml(mock_et_parse):
+&gt;       mock_et_parse.side_effect = ET.ParseError
+                                    ^^
+E       NameError: name 'ET' is not defined
+
+/tests/test_generated.py:85: NameError</failure></testcase></testsuite></testsuites>

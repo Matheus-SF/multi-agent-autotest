@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="8" time="0.212" timestamp="2026-02-23T14:03:46.016058+00:00" hostname="d44dcd01a058"><testcase classname="test_generated" name="test_run_tests_happy_path" time="0.002" /><testcase classname="test_generated" name="test_run_tests_coverage_file_missing" time="0.002"><failure message="assert 'stderr' in &quot;test_run_tests_coverage_file_missing.&lt;locals&gt;.&lt;lambda&gt;() missing 1 required positional argument: 'p'&quot;&#10; +  where &quot;test_run_tests_coverage_file_missing.&lt;locals&gt;.&lt;lambda&gt;() missing 1 required positional argument: 'p'&quot; = CoverageResult(success=False, coverage_pct=0.0, uncovered_lines={}, tests_passed=0, tests_failed=0, failed_tests=None, error_output=&quot;test_run_tests_coverage_file_missing.&lt;locals&gt;.&lt;lambda&gt;() missing 1 required positional argument: 'p'&quot;).error_output">mock_exists = &lt;MagicMock name='exists' id='125485706029520'&gt;
+mock_run = &lt;MagicMock name='run' id='125485692970960'&gt;
+
+    @patch('executor.subprocess.run')
+    @patch('executor.Path.exists')
+    def test_run_tests_coverage_file_missing(mock_exists, mock_run):
+        mock_exists.side_effect = lambda p: p.name != 'coverage.xml'
+        mock_run.return_value = MagicMock(stdout="stdout", stderr="stderr")
+    
+        result = run_tests('/fake/code', '/fake/tests')
+        assert not result.success
+        assert result.coverage_pct == 0.0
+&gt;       assert 'stderr' in result.error_output
+E       assert 'stderr' in "test_run_tests_coverage_file_missing.&lt;locals&gt;.&lt;lambda&gt;() missing 1 required positional argument: 'p'"
+E        +  where "test_run_tests_coverage_file_missing.&lt;locals&gt;.&lt;lambda&gt;() missing 1 required positional argument: 'p'" = CoverageResult(success=False, coverage_pct=0.0, uncovered_lines={}, tests_passed=0, tests_failed=0, failed_tests=None, error_output="test_run_tests_coverage_file_missing.&lt;locals&gt;.&lt;lambda&gt;() missing 1 required positional argument: 'p'").error_output
+
+/tests/test_generated.py:36: AssertionError</failure></testcase><testcase classname="test_generated" name="test_run_tests_timeout" time="0.002" /><testcase classname="test_generated" name="test_run_tests_unexpected_exception" time="0.003" /><testcase classname="test_generated" name="test_parse_coverage_happy_path" time="0.006" /><testcase classname="test_generated" name="test_parse_coverage_malformed_xml" time="0.001"><failure message="xml.etree.ElementTree.ParseError: &lt;no detail available&gt;">mock_parse = &lt;MagicMock name='parse' id='125485693021200'&gt;
+
+    @patch('executor.ET.parse')
+    def test_parse_coverage_malformed_xml(mock_parse):
+        mock_parse.side_effect = ET.ParseError
+    
+&gt;       result = _parse_coverage(Path('/fake/coverage.xml'))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+/tests/test_generated.py:73: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+executor.py:101: in _parse_coverage
+    tree = ET.parse(coverage_xml)
+           ^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.11/unittest/mock.py:1124: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.11/unittest/mock.py:1128: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = &lt;MagicMock name='parse' id='125485693021200'&gt;
+args = (PosixPath('/fake/coverage.xml'),), kwargs = {}
+effect = &lt;class 'xml.etree.ElementTree.ParseError'&gt;
+
+    def _execute_mock_call(self, /, *args, **kwargs):
+        # separate from _increment_mock_call so that awaited functions are
+        # executed separately from their call, also AsyncMock overrides this method
+    
+        effect = self.side_effect
+        if effect is not None:
+            if _is_exception(effect):
+&gt;               raise effect
+E               xml.etree.ElementTree.ParseError: &lt;no detail available&gt;
+
+/usr/local/lib/python3.11/unittest/mock.py:1183: ParseError</failure></testcase><testcase classname="test_generated" name="test_parse_junit_happy_path" time="0.003" /><testcase classname="test_generated" name="test_parse_junit_malformed_xml" time="0.001" /></testsuite></testsuites>

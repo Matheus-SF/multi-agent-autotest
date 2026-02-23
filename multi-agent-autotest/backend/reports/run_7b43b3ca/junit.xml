@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="1" failures="0" skipped="0" tests="1" time="0.214" timestamp="2026-02-23T13:43:22.884728+00:00" hostname="95b7cdbc060e"><testcase classname="" name="test_generated" time="0.000"><error message="collection failure">ImportError while importing test module '/tests/test_generated.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/local/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/tests/test_generated.py:4: in &lt;module&gt;
+    from analyzer import analyze_code
+analyzer.py:1: in &lt;module&gt;
+    from langchain_openai import ChatOpenAI
+E   ModuleNotFoundError: No module named 'langchain_openai'</error></testcase></testsuite></testsuites>

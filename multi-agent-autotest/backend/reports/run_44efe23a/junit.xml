@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="4" skipped="0" tests="7" time="0.074" timestamp="2026-02-23T13:53:46.888760+00:00" hostname="a7d18caab5d6"><testcase classname="test_generated" name="test_run_tests_coverage_file_not_exists" time="0.001" /><testcase classname="test_generated" name="test_run_tests_junit_file_not_exists" time="0.001"><failure message="assert None == []&#10; +  where None = CoverageResult(success=True, coverage_pct=75.0, uncovered_lines={}, tests_passed=0, tests_failed=0, failed_tests=None, error_output=None).failed_tests">def test_run_tests_junit_file_not_exists():
+        with patch('executor.subprocess.run') as mock_run, \
+             patch('executor.Path.exists', side_effect=[True, False]), \
+             patch('executor._parse_coverage', return_value=CoverageResult(True, 75.0, {})):
+            mock_run.return_value = MagicMock(stdout="stdout", stderr="stderr")
+            result = run_tests("code_dir", "tests_dir")
+            assert result.success
+            assert result.coverage_pct == 75.0
+            assert result.uncovered_lines == {}
+            assert result.tests_passed == 0
+            assert result.tests_failed == 0
+&gt;           assert result.failed_tests == []
+E           assert None == []
+E            +  where None = CoverageResult(success=True, coverage_pct=75.0, uncovered_lines={}, tests_passed=0, tests_failed=0, failed_tests=None, error_output=None).failed_tests
+
+/tests/test_generated.py:27: AssertionError</failure></testcase><testcase classname="test_generated" name="test_run_tests_timeout" time="0.000"><failure message="NameError: name 'subprocess' is not defined">def test_run_tests_timeout():
+&gt;       with patch('executor.subprocess.run', side_effect=subprocess.TimeoutExpired(cmd='cmd', timeout=120)):
+                                                          ^^^^^^^^^^
+E       NameError: name 'subprocess' is not defined
+
+/tests/test_generated.py:30: NameError</failure></testcase><testcase classname="test_generated" name="test_run_tests_exception" time="0.001" /><testcase classname="test_generated" name="test_parse_coverage_malformed_xml" time="0.000"><failure message="NameError: name 'ET' is not defined">def test_parse_coverage_malformed_xml():
+&gt;       with patch('xml.etree.ElementTree.parse', side_effect=ET.ParseError):
+                                                              ^^
+E       NameError: name 'ET' is not defined
+
+/tests/test_generated.py:46: NameError</failure></testcase><testcase classname="test_generated" name="test_parse_junit_malformed_xml" time="0.000"><failure message="NameError: name 'ET' is not defined">def test_parse_junit_malformed_xml():
+&gt;       with patch('xml.etree.ElementTree.parse', side_effect=ET.ParseError):
+                                                              ^^
+E       NameError: name 'ET' is not defined
+
+/tests/test_generated.py:53: NameError</failure></testcase><testcase classname="test_generated" name="test_parse_junit_missing_testsuite" time="0.001" /></testsuite></testsuites>
