@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 
-const API_URL = "https://friendly-trout-r47rw4px56qjcx7xp-8080.app.github.dev/api";
+const API_URL = "/api";
 const BACKEND_URL = "https://friendly-trout-r47rw4px56qjcx7xp-8080.app.github.dev";
 
 const ETAPAS = ["analyzer", "writer", "executor", "reviewer"];
